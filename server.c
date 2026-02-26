@@ -6,14 +6,34 @@
     #include <unistd.h>       // close, read
     #include <string.h>       // strchr
     #include <stdio.h>        // printf
+    #include <stdlib.h>       // exit(1)
     #include <arpa/inet.h>
 
     void edithtml(){
-        char msg[1024];
-        printf("Enter something: ");
+        char msg[4096] = ""; FILE *fptr;
+        printf("Type 'exit' to finish writing\n");
+        printf("Enter Website Contents:\n\n");
         fflush(stdout);
-        fgets(msg, sizeof(msg), stdin); // safer than scanf("%s")
-        printf("You typed: %s\n", msg);
+
+        char line[256];
+        while(1){
+            fgets(line, sizeof(line), stdin); // safer than scanf("%s")
+            line[strcspn(line, "\n")] = 0;
+            if (strcmp(line, "exit") == 0){ break;}
+            
+            strcat(msg, line);
+            strcat(msg, "\n");
+        }
+
+        fptr = fopen("file.html", "w");
+        if (fptr == NULL){
+            printf("Error opening file!");
+            return;
+        } 
+        fputs(msg, fptr);
+        fclose(fptr);  
+
+        printf("\nFile contents successfully saved");
     }
 
     int main() {
@@ -44,8 +64,10 @@
         if (listen(server_fd, 10) < 0) { perror("listen"); return 1; }
 
         const char *default_file = "file.html"; // default file to show
-        printf("Server listening on port %d...\n", port);
+        printf("\nServer listening on port %d...\n", port);
+        printf("------------------------------------------------------------------------");
         printf("\nGo to this link: http://localhost:%d/%s\n", port, default_file); 
+        printf("------------------------------------------------------------------------");
         fflush(stdout); // make sure it prints immediately
 
         // 5. Accept a client connection
